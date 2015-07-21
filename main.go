@@ -1,25 +1,23 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
+	"github.com/fsouza/go-dockerclient"
+
 	"crypto/tls"
-	//"encoding/json"
-	//"github.com/yihungjen/bigobject-registry"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
+	//"path"
+	"fmt"
 	"text/template"
 )
 
-const (
-	// try-bigobject service is of domain trial
-	DOMAIN = "trial"
-
-	// try-bigobject provisions user at tier1 machine
-	TIER = "tier1"
-)
-
 var (
+	HostName = os.Getenv("TRIAL_SERVICE_ENDPOINT")
+
+	DockerHost = os.Getenv("DOCKER_HOST")
+
 	// Request endpoint multiplexer at PORT 9090
 	Server = http.NewServeMux()
 
@@ -60,39 +58,45 @@ func HandleAlert(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
-	//if r.Method != "GET" {
-	//	http.Error(w, "Method not allowd", 405)
-	//	return
-	//}
-	//headers := w.Header()
-	//headers.Add("Content-Type", "application/javascript")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowd", 405)
+		return
+	}
+	headers := w.Header()
+	headers.Add("Content-Type", "application/javascript")
 
-	//payload := url.Values{}
-	//payload.Set("domain", DOMAIN)
-	//payload.Set("tier", TIER)
-	//payload.Set("app", "")
+	cli, err := docker.NewClient(DockerHost)
+	if err != nil {
+		log.Error(err)
+		http.NotFound(w, r)
+		return
+	}
 
-	//resp, err := http.PostForm(Registry.String(), payload)
-	//if err != nil {
-	//	http.Error(w, "Unable to complete resource acquistion", 503)
-	//	return
-	//}
+	container, err := cli.CreateContainer(docker.CreateContainerOptions{
+		Config: &docker.Config{Image: "macrodata/bigobject-dev"},
+	})
+	if err != nil || container == nil {
+		log.Error(err)
+		http.NotFound(w, r)
+		return
+	}
+	log.WithFields(log.Fields{"container": container.ID}).Info("prepare new instance")
 
-	//var resource registry.ResourceEvent
-	//if err := json.NewDecoder(resp.Body).Decode(&resource); err != nil {
-	//	http.Error(w, "Unable to complete resource acquistion", 503)
-	//	return
-	//}
+	err = cli.StartContainer(container.ID, &docker.HostConfig{
+		PublishAllPorts: true,
+	})
+	if err != nil {
+		log.Error(err)
+		http.NotFound(w, r)
+		return
+	}
 
-	//info := &MockRequset{
-	//	TLS:  nil,
-	//	Host: resource.Origin,
-	//}
+	info := &MockRequset{Host: fmt.Sprintf("%s/c/%s", HostName, container.ID)}
+	if err = CmdTmpl.Execute(w, info); err != nil {
+		log.Error(err)
+		http.NotFound(w, r)
+	}
 
-	//if err := CmdTmpl.Execute(w, info); err != nil {
-	//	log.Println(err)
-	//}
-	http.NotFound(w, r)
 	return
 }
 
@@ -108,10 +112,4 @@ func init() {
 	Server.HandleFunc("/", HandleRoot)
 	Server.HandleFunc("/alert", HandleAlert)
 	Server.HandleFunc("/bosh.command.js", HandleBoshCommand)
-
-	var err error
-	Registry, err = url.ParseRequestURI(os.Getenv("REGISTRY_URI"))
-	if err != nil {
-		log.Fatalln(err)
-	}
 }

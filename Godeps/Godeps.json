@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/yihungjen/try-bigobject",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.3-3-g07d998d",
+			"Rev": "07d998d174c4e2dc90e2f1989a20724220bca1ff"
+		},
+		{
+			"ImportPath": "github.com/fsouza/go-dockerclient",
+			"Rev": "f6e9f5396e0e8f34472efe443d0cb7f9af162b88"
+		}
+	]
+}
