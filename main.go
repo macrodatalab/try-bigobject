@@ -3,18 +3,19 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/macrodatalab/try-bigobject/proxy"
 
 	"crypto/tls"
-	"net/http"
-	"net/url"
-	"os"
-	//"path"
 	"fmt"
+	"net/http"
+	"os"
 	"text/template"
 )
 
 var (
 	HostName = os.Getenv("TRIAL_SERVICE_ENDPOINT")
+
+	ServiceImage = os.Getenv("TRIAL_SERVICE_IMAGE")
 
 	DockerHost = os.Getenv("DOCKER_HOST")
 
@@ -25,9 +26,6 @@ var (
 
 	// Command template for our web bosh
 	CmdTmpl *template.Template
-
-	// Where our registry is
-	Registry *url.URL
 )
 
 type MockRequset struct {
@@ -73,7 +71,7 @@ func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
 	}
 
 	container, err := cli.CreateContainer(docker.CreateContainerOptions{
-		Config: &docker.Config{Image: "macrodata/bigobject-dev"},
+		Config: &docker.Config{Image: ServiceImage},
 	})
 	if err != nil || container == nil {
 		log.Error(err)
@@ -95,6 +93,7 @@ func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
 	if err = CmdTmpl.Execute(w, info); err != nil {
 		log.Error(err)
 		http.NotFound(w, r)
+		return
 	}
 
 	return
@@ -108,6 +107,8 @@ func main() {
 
 func init() {
 	CmdTmpl = template.Must(template.ParseFiles("/static/bosh.command.js"))
+
+	Server.Handle("/c/", proxy.NewProxy())
 
 	Server.HandleFunc("/", HandleRoot)
 	Server.HandleFunc("/alert", HandleAlert)

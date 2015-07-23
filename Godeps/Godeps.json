@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/yihungjen/try-bigobject",
+	"ImportPath": "github.com/macrodatalab/try-bigobject",
 	"GoVersion": "go1.4.2",
 	"Deps": [
 		{
@@ -8,8 +8,17 @@
 			"Rev": "07d998d174c4e2dc90e2f1989a20724220bca1ff"
 		},
 		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v2.0.0-18-gc904d70",
+			"Rev": "c904d7032a70da6551c43929f199244f6a45f4c1"
+		},
+		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
 			"Rev": "f6e9f5396e0e8f34472efe443d0cb7f9af162b88"
+		},
+		{
+			"ImportPath": "github.com/ugorji/go/codec",
+			"Rev": "03e33114d4d60a1f37150325e15f51b0fa6fc4f6"
 		}
 	]
 }
