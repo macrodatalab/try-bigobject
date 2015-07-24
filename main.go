@@ -10,6 +10,13 @@ import (
 	"net/http"
 	"os"
 	"text/template"
+	"time"
+)
+
+const (
+	BO_CACHE_TARGET = "bo-trial-target"
+
+	BO_CACHE_EXPIRE = 23 * time.Hour
 )
 
 var (
@@ -55,41 +62,67 @@ func HandleAlert(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowd", 405)
-		return
-	}
-	headers := w.Header()
-	headers.Add("Content-Type", "application/javascript")
-
+func NewInstance() (container *docker.Container, err error) {
 	cli, err := docker.NewClient(DockerHost)
 	if err != nil {
-		log.Error(err)
-		http.NotFound(w, r)
 		return
 	}
 
-	container, err := cli.CreateContainer(docker.CreateContainerOptions{
+	container, err = cli.CreateContainer(docker.CreateContainerOptions{
 		Config: &docker.Config{Image: ServiceImage},
 	})
 	if err != nil || container == nil {
-		log.Error(err)
-		http.NotFound(w, r)
 		return
 	}
+
 	log.WithFields(log.Fields{"container": container.ID}).Info("prepare new instance")
 
 	err = cli.StartContainer(container.ID, &docker.HostConfig{
 		PublishAllPorts: true,
 	})
 	if err != nil {
-		log.Error(err)
-		http.NotFound(w, r)
 		return
 	}
 
+	return
+}
+
+func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowd", 405)
+		return
+	}
+
+	// obtain bo identity in cached cookie; if verified go with it, otherwise
+	// new instance; if all failed abort
+	var container *docker.Container
+
+	iden, err := r.Cookie(BO_CACHE_TARGET)
+	if err == nil {
+		_, err = proxy.GetNetLoc(iden.Value)
+	}
+
+	if err != nil {
+		container, err = NewInstance()
+		if err != nil {
+			log.Error(err)
+			http.NotFound(w, r)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:    BO_CACHE_TARGET,
+			Value:   container.ID,
+			Expires: time.Now().Add(BO_CACHE_EXPIRE),
+		})
+	} else {
+		container = &docker.Container{ID: iden.Value}
+	}
+
 	info := &MockRequset{Host: fmt.Sprintf("%s/c/%s", HostName, container.ID)}
+
+	headers := w.Header()
+	headers.Add("Content-Type", "application/javascript")
+
 	if err = CmdTmpl.Execute(w, info); err != nil {
 		log.Error(err)
 		http.NotFound(w, r)
