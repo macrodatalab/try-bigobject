@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+<head>
 <script>
     function getCookie(cname) {
         var name = cname + "=";
@@ -10,12 +13,23 @@
         return "";
     }
 
-    var ack = getCookie("alert-trial-data-volatile");
+    function newDoc() {
+        window.location.href = "/index.html";
+    }
 
-    if (ack == "") {
-        window.alert("Please enable cookie for correct behavior");
-    } else {
-        window.alert("Attention!!  Data stored here are volatile!!");
-        window.location.href = "/";
+    window.onload = function() {
+        var ack = getCookie("alert-trial-data-volatile");
+        if (ack == "") {
+            document.querySelector("p").innerHTML = "Please enable cookie for correct behavior";
+            document.querySelector("input").style.display = "none";
+        } else {
+            document.querySelector("p").innerHTML = "Attention!!  Data stored here are volatile!!";
+        }
     }
 </script>
+</head>
+<body>
+    <p></p>
+    <input type="button" value="continue" onclick="newDoc()">
+</body>
+</html>

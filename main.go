@@ -42,6 +42,9 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowd", 405)
 		return
 	}
+
+	log.WithFields(log.Fields{"referer": r.Referer(), "url": r.URL}).Debug("GET")
+
 	if _, err := r.Cookie(BO_ALERT_KEY); err != nil {
 		http.SetCookie(w, &http.Cookie{
 			Name:   BO_ALERT_KEY,
@@ -49,7 +52,7 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 			Path:   "/",
 			MaxAge: 120,
 		})
-		http.Redirect(w, r, "/alert", 301)
+		http.Redirect(w, r, "/alert", 307)
 	} else {
 		FileServer.ServeHTTP(w, r)
 	}
@@ -143,6 +146,7 @@ func main() {
 	Server.Handle("/c/", proxy.NewProxy())
 
 	Server.HandleFunc("/", HandleRoot)
+	Server.HandleFunc("/favicon.ico", http.NotFound)
 	Server.HandleFunc("/alert", HandleAlert)
 	Server.HandleFunc("/bosh.command.js", HandleBoshCommand)
 
@@ -150,6 +154,4 @@ func main() {
 
 	log.Println("begin serving Trial Service...")
 	log.Fatalln(s.ListenAndServe())
-
-	log.Println("why...?")
 }
