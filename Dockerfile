@@ -14,7 +14,10 @@ COPY browser-bosh/papaparsesrc/papaparse.js /static/
 COPY browser-bosh/urlsrc/url.min.js /static/
 COPY browser-bosh/underscoresrc/underscore-min.js /static/
 COPY browser-bosh/terminalsrc/src/* /static/
-COPY alert.html /static/
+
+RUN mv /static/index.html /static/root.html
+
+COPY alert.html /static/index.html
 
 COPY main.go /go/src/github.com/macrodatalab/try-bigobject/
 COPY discovery/ /go/src/github.com/macrodatalab/try-bigobject/discovery/

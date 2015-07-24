@@ -40,28 +40,6 @@ type MockRequset struct {
 	Host string
 }
 
-func HandleRoot(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowd", 405)
-		return
-	}
-	if _, err := r.Cookie("alert-trial-data-volatile"); err != nil {
-		http.SetCookie(w, &http.Cookie{
-			Name:   "alert-trial-data-volatile",
-			Path:   "/",
-			MaxAge: 120,
-		})
-		http.Redirect(w, r, "/alert", 301)
-	} else {
-		FileServer.ServeHTTP(w, r)
-	}
-}
-
-func HandleAlert(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "/static/alert.html")
-	return
-}
-
 func NewInstance() (container *docker.Container, err error) {
 	cli, err := docker.NewClient(DockerHost)
 	if err != nil {
@@ -133,17 +111,17 @@ func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	s := &http.Server{Addr: ":80", Handler: Server}
-	log.Println("begin serving Trial Service...")
-	log.Fatalln(s.ListenAndServe())
-}
-
-func init() {
 	CmdTmpl = template.Must(template.ParseFiles("/static/bosh.command.js"))
 
 	Server.Handle("/c/", proxy.NewProxy())
 
-	Server.HandleFunc("/", HandleRoot)
-	Server.HandleFunc("/alert", HandleAlert)
+	Server.Handle("/", FileServer)
 	Server.HandleFunc("/bosh.command.js", HandleBoshCommand)
+
+	s := &http.Server{Addr: ":80", Handler: Server}
+
+	log.Println("begin serving Trial Service...")
+	log.Fatalln(s.ListenAndServe())
+
+	log.Println("why...?")
 }

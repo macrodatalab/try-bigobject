@@ -1,4 +1,13 @@
+<html>
+<head>
+    <link rel="import" href="/root.html">
+</head>
+<body>
 <script>
     window.alert("Attention!!  Data stored here are volatile!!");
-    window.location.href = "/";
+    var link = document.querySelector('link[rel="import"]');
+    var content = link.import;
+    document.body.innerHTML = content.querySelector('body').innerHTML;
 </script>
+</body>
+</html>
