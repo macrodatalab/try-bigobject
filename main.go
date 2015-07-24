@@ -14,6 +14,8 @@ import (
 )
 
 const (
+	BO_ALERT_KEY = "alert-trial-data-volatile"
+
 	BO_CACHE_TARGET = "bo-trial-target"
 
 	BO_CACHE_EXPIRE = 23 * time.Hour
@@ -34,6 +36,31 @@ var (
 	// Command template for our web bosh
 	CmdTmpl *template.Template
 )
+
+func HandleRoot(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowd", 405)
+		return
+	}
+	if _, err := r.Cookie(BO_ALERT_KEY); err != nil {
+		http.SetCookie(w, &http.Cookie{
+			Name:   BO_ALERT_KEY,
+			Value:  "ack",
+			Path:   "/",
+			MaxAge: 120,
+		})
+		http.Redirect(w, r, "/alert", 301)
+	} else {
+		FileServer.ServeHTTP(w, r)
+	}
+
+	return
+}
+
+func HandleAlert(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "/static/alert.html")
+	return
+}
 
 type MockRequset struct {
 	TLS  *tls.ConnectionState
@@ -115,7 +142,8 @@ func main() {
 
 	Server.Handle("/c/", proxy.NewProxy())
 
-	Server.Handle("/", FileServer)
+	Server.HandleFunc("/", HandleRoot)
+	Server.HandleFunc("/alert", HandleAlert)
 	Server.HandleFunc("/bosh.command.js", HandleBoshCommand)
 
 	s := &http.Server{Addr: ":80", Handler: Server}

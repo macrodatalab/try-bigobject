@@ -1,13 +1,21 @@
-<html>
-<head>
-    <link rel="import" href="/root.html">
-</head>
-<body>
 <script>
-    window.alert("Attention!!  Data stored here are volatile!!");
-    var link = document.querySelector('link[rel="import"]');
-    var content = link.import;
-    document.body.innerHTML = content.querySelector('body').innerHTML;
+    function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1);
+            if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+        }
+        return "";
+    }
+
+    var ack = getCookie("alert-trial-data-volatile");
+
+    if (ack == "") {
+        window.alert("Please enable cookie for correct behavior");
+    } else {
+        window.alert("Attention!!  Data stored here are volatile!!");
+        window.location.href = "/";
+    }
 </script>
-</body>
-</html>
