@@ -27,8 +27,8 @@ var (
 
 func NewProxy() (s *RegexpHandler) {
 	s = &RegexpHandler{}
-	s.HandleFunc("/c/[[:xdigit:]]+/cmd", HandleForward)
-	s.HandleFunc("/c/[[:xdigit:]]+/import", HandleLoad)
+	s.HandleFunc("/c/[[:xdigit:]]+/cmd", HandleCmdForward)
+	s.HandleFunc("/c/[[:xdigit:]]+/(import|info)", HandleEndpoint)
 	return
 }
 
@@ -109,7 +109,7 @@ func GetTargetDiscovery(key string) (target *url.URL, err error) {
 	return
 }
 
-func HandleForward(w http.ResponseWriter, r *http.Request) {
+func HandleCmdForward(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowd", 405)
 		return
@@ -135,7 +135,7 @@ func HandleForward(w http.ResponseWriter, r *http.Request) {
 	io.Copy(NewStreamer(w), resp.Body)
 }
 
-func HandleLoad(w http.ResponseWriter, r *http.Request) {
+func HandleEndpoint(w http.ResponseWriter, r *http.Request) {
 	bourl, err := GetTargetDiscovery(r.URL.Path)
 	if err != nil {
 		log.Error(err)
