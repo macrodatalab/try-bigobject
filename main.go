@@ -26,8 +26,6 @@ var (
 
 	ServiceImage = os.Getenv("TRIAL_SERVICE_IMAGE")
 
-	DockerHost = os.Getenv("DOCKER_HOST")
-
 	// Request endpoint multiplexer at PORT 9090
 	Server = http.NewServeMux()
 
@@ -71,7 +69,7 @@ type MockRequset struct {
 }
 
 func NewInstance() (container *docker.Container, err error) {
-	cli, err := docker.NewClient(DockerHost)
+	cli, err := NewClient()
 	if err != nil {
 		return
 	}

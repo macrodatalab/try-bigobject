@@ -5,6 +5,7 @@ COPY html_content/ /static/
 COPY alert.html /static/
 
 COPY main.go /go/src/github.com/macrodatalab/try-bigobject/
+COPY docker.go /go/src/github.com/macrodatalab/try-bigobject/
 COPY discovery/ /go/src/github.com/macrodatalab/try-bigobject/discovery/
 COPY proxy/ /go/src/github.com/macrodatalab/try-bigobject/proxy/
 COPY Godeps/ /go/src/github.com/macrodatalab/try-bigobject/Godeps/
