@@ -77,7 +77,10 @@ func NewInstance() (container *docker.Container, err error) {
 	}
 
 	container, err = cli.CreateContainer(docker.CreateContainerOptions{
-		Config: &docker.Config{Image: ServiceImage},
+		Config: &docker.Config{
+			Image: ServiceImage,
+			Env:   []string{"constraint:type==instance"},
+		},
 	})
 	if err != nil || container == nil {
 		return
