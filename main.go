@@ -14,8 +14,6 @@ import (
 )
 
 const (
-	BO_ALERT_KEY = "alert-trial-data-volatile"
-
 	BO_CACHE_TARGET = "bo-trial-target"
 
 	BO_CACHE_EXPIRE = 23 * time.Hour
@@ -43,12 +41,12 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 
 	log.WithFields(log.Fields{"referer": r.Referer(), "url": r.URL}).Debug("GET")
 
-	if _, err := r.Cookie(BO_ALERT_KEY); err != nil {
+	if _, err := r.Cookie(BO_CACHE_TARGET); err != nil {
 		http.SetCookie(w, &http.Cookie{
-			Name:   BO_ALERT_KEY,
-			Value:  "ack",
-			Path:   "/",
-			MaxAge: 120,
+			Name:    BO_CACHE_TARGET,
+			Value:   "ack",
+			Path:    "/",
+			Expires: time.Now().Add(BO_CACHE_EXPIRE),
 		})
 		http.Redirect(w, r, "/alert", 307)
 	} else {
@@ -108,7 +106,11 @@ func HandleBoshCommand(w http.ResponseWriter, r *http.Request) {
 
 	iden, err := r.Cookie(BO_CACHE_TARGET)
 	if err == nil {
-		_, err = proxy.GetNetLoc(iden.Value)
+		if iden.Value == "ack" {
+			err = fmt.Errorf("pending instance creation")
+		} else {
+			_, err = proxy.GetNetLoc(iden.Value)
+		}
 	}
 
 	if err != nil {
