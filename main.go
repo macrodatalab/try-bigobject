@@ -24,6 +24,8 @@ var (
 
 	ServiceImage = os.Getenv("TRIAL_SERVICE_IMAGE")
 
+	PlacementConstraint = os.Getenv("PLACEMENT_CONSTRAINT")
+
 	// Request endpoint multiplexer at PORT 9090
 	Server = http.NewServeMux()
 
@@ -73,9 +75,10 @@ func NewInstance() (container *docker.Container, err error) {
 	}
 
 	container, err = cli.CreateContainer(docker.CreateContainerOptions{
+		Name: "", // TODO: allow instance named to be customized
 		Config: &docker.Config{
 			Image: ServiceImage,
-			Env:   []string{"constraint:type==instance"},
+			Env:   []string{PlacementConstraint},
 		},
 	})
 	if err != nil || container == nil {

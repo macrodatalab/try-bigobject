@@ -14,8 +14,9 @@ WORKDIR /go/src/github.com/macrodatalab/try-bigobject
 ENV GOPATH /go/src/github.com/macrodatalab/try-bigobject/Godeps/_workspace:$GOPATH
 RUN go install
 
-ENV TRIAL_SERVICE_ENDPOINT try.bigobjectio
-ENV TRIAL_SERVICE_IMAGE macrodata/bigobject-dev
+ENV TRIAL_SERVICE_ENDPOINT try.bigobject.io
+ENV TRIAL_SERVICE_IMAGE macrodata/bigobject-dev:demo
+ENV PLACEMENT_CONSTRAINT constraint:type==instance
 
 EXPOSE 80
 
