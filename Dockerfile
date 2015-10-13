@@ -3,6 +3,7 @@ MAINTAINER YI-HUNG JEN <yihungjen@macrodatalab.com>
 
 COPY html_content/ /static/
 COPY alert.html /static/
+COPY Attention.png /static/
 
 COPY main.go /go/src/github.com/macrodatalab/try-bigobject/
 COPY docker.go /go/src/github.com/macrodatalab/try-bigobject/
