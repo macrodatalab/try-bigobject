@@ -4,7 +4,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/macrodatalab/try-bigobject/proxy"
-
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -51,10 +50,8 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 			Expires: time.Now().Add(BO_CACHE_EXPIRE),
 		})
 		http.Redirect(w, r, "/alert", 307)
-	} else {
-		FileServer.ServeHTTP(w, r)
 	}
-
+	FileServer.ServeHTTP(w, r)
 	return
 }
 

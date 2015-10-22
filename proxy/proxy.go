@@ -120,7 +120,16 @@ func HandleCmdForward(w http.ResponseWriter, r *http.Request) {
 		log.Error(err)
 		http.Error(w, err.Error(), 500)
 		return
-	}
+	}else{
+              f, err := os.OpenFile("/log/cmdlog", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+              if err != nil {}
+              defer f.Close()
+              log.SetOutput(f)
+              log.Println(r)
+
+        }
+      
+       
 
 	resp, err := http.Post(bourl.String(), "application/json", r.Body)
 	if err != nil {
@@ -129,10 +138,11 @@ func HandleCmdForward(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer resp.Body.Close()
-
+ 
 	// we reply content in JSON
 	w.Header().Add("Content-Type", "application/json")
 	io.Copy(NewStreamer(w), resp.Body)
+
 }
 
 func HandleEndpoint(w http.ResponseWriter, r *http.Request) {

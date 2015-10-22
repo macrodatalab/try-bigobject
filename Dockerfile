@@ -1,6 +1,7 @@
 FROM golang:1.4.2
 MAINTAINER YI-HUNG JEN <yihungjen@macrodatalab.com>
 
+RUN  mkdir /log/
 COPY html_content/ /static/
 COPY alert.html /static/
 COPY Attention.png /static/
